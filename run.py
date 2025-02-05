@@ -46,6 +46,7 @@ class ChangeStreamHandler:
 
             if operation_type == "insert":
                 full_doc = change.get("fullDocument")
+                # Parallel insert ops to all target clusters:
                 await asyncio.gather(
                     *[
                         c[TARGET_DB][coll_name].insert_one(full_doc)
@@ -64,6 +65,7 @@ class ChangeStreamHandler:
                     update_doc["$unset"] = {
                         field: "" for field in update_desc.get("removedFields")
                     }
+                # Parallel update ops to all target clusters:
                 await asyncio.gather(
                     *[
                         c[TARGET_DB][coll_name].update_one({"_id": _id}, update_doc)
@@ -71,12 +73,14 @@ class ChangeStreamHandler:
                     ]
                 )
             elif operation_type == "delete":
+                # Parallel delete ops to all target clusters:
                 await asyncio.gather(
                     *[
                         c[TARGET_DB][coll_name].delete_one({"_id": _id})
                         for c in self.target_clients
                     ]
                 )
+            # Upsert the resume token to keep a pointer to the last handled event:
             await self.source_client["globalDataReplication"]["status"].update_one(
                 {"_id": "resumeToken"}, {"$set": {"token": resume_token}},
                 upsert=True
@@ -88,6 +92,7 @@ class ChangeStreamHandler:
 
     async def watch_changes(self):
         try:
+            # Read the last resume token in case the process broke unexpectedly:
             last_resume_token_doc = await self.source_client["globalDataReplication"]["status"].find_one({"_id": "resumeToken"})
             last_resume_token = last_resume_token_doc.get("token") if last_resume_token_doc else None
             if last_resume_token:
@@ -143,6 +148,6 @@ async def main():
 
 if __name__ == "__main__":
     if not SOURCE_MONGODB_URI or not TARGET_CLUSTERS_URIS:
-        logger.error("MongoDB connection strings not found in environment variables")
+        logger.error("MongoDB connection strings not found in env vars")
         exit(1)
     asyncio.run(main())
