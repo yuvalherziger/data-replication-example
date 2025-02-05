@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "vicarius-change-streams"
+name = "change-stream-multiple-clusters"
 version = "0.1.0"
 description = ""
 authors = ["yuvalherziger <yuvalhrz@gmail.com>"]
 readme = "README.md"
-packages = [{include = "vicarius_change_streams"}]
+packages = [{include = "change_stream_multiple_clusters"}]
 
 [tool.poetry.dependencies]
 python = "^3.9"
