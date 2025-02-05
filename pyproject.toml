@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "vicarius-change-streams"
+version = "0.1.0"
+description = ""
+authors = ["yuvalherziger <yuvalhrz@gmail.com>"]
+readme = "README.md"
+packages = [{include = "vicarius_change_streams"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+motor = "^3.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
